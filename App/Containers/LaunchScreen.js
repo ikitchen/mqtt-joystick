@@ -3,8 +3,8 @@ import { ScrollView, Text, Image, View } from 'react-native';
 import DevscreensButton from '../../ignite/DevScreens/DevscreensButton.js';
 import { NavigationActions } from 'react-navigation';
 import { Button } from 'react-native';
-
 import { Images } from '../Themes';
+// import MQTT from '../Services/MQTT';
 
 // Styles
 import styles from './Styles/LaunchScreenStyles';
@@ -13,7 +13,22 @@ import Joystick from '../Components/Joystick.js';
 export default class LaunchScreen extends Component {
   onJoystickChange = ({ sector, side }) => {
     console.log('onJoystickChange', { sector, side });
+    // this.state.connMgr.publish(
+    //   'default',
+    //   'u/mk/d/joystick/direction',
+    //   side || '0'
+    // );
   };
+
+  state = {
+    // connMgr: null
+  };
+
+  componentDidMount() {
+    // const connMgr = MQTT();
+    // this.setState({ connMgr });
+    // console.log('connMgr', this.state.connMgr);
+  }
 
   render() {
     return (
