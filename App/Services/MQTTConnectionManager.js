@@ -20,12 +20,18 @@ class MQTTConnection {
 
   onConnect = () => {
     this.event.emit('connect');
-    this.client.subscribe('u/mk/d/espdev/light'); //TODO: remove
+    this.subscriptions.forEach(topic =>
+      this.client.subscribe(this.addPrefix(topic))
+    );
   };
+
   onConnectionLost = () => {
     this.event.emit('disconnect');
   };
+
   onMessageArrived = message => {
+    const bareTopic = this.removePrefix(message.topic);
+    message.bareTopic = bareTopic;
     this.event.emit('message', message);
   };
 
@@ -35,10 +41,14 @@ class MQTTConnection {
     username,
     password,
     deviceId,
+    subscriptions,
     path = '',
     useSSL = false
   }) {
     const { onConnectionLost, onMessageArrived, onConnect } = this;
+    this.deviceId = deviceId;
+    this.username = username;
+    this.subscriptions = subscriptions;
 
     this.client = new Paho.MQTT.Client(
       hostname,
@@ -58,6 +68,28 @@ class MQTTConnection {
     });
   }
 
+  get topicPrefix() {
+    const { username, deviceId } = this;
+    return `u/${username}/d/${deviceId}/`;
+  }
+
+  addPrefix(topic) {
+    return `${this.topicPrefix}${topic}`;
+  }
+
+  removePrefix(topic) {
+    const pfx = this.topicPrefix;
+    if (topic.startsWith(pfx)) {
+      return topic.slice(pfx.length);
+    } else {
+      return topic;
+    }
+  }
+
+  publish(topic, payload, qos = 0, retained = false) {
+    this.client.publish(this.addPrefix(topic), payload, qos, retained);
+  }
+
   destroy() {
     try {
       this.client.disconnect();
@@ -68,7 +100,7 @@ class MQTTConnection {
   }
 }
 
-const subscribeTo = (connMgr, conn, uid) => {
+const addEventListeners = (connMgr, conn, uid) => {
   conn.event.on('message', connMgr._onMessage.bind(connMgr, uid));
   conn.event.on('connect', connMgr._onConnect.bind(connMgr, uid));
   conn.event.on('disconnect', connMgr._onDisconnect.bind(connMgr, uid));
@@ -83,6 +115,7 @@ export default class MQTTConnectionManager {
     console.log(
       `_onMessage(${uid}, ${JSON.stringify({
         t: message.topic,
+        bt: message.bareTopic,
         p: message.payloadString
       })})`
     );
@@ -96,8 +129,12 @@ export default class MQTTConnectionManager {
     console.log(`_onDisconnect(${uid})`);
   }
 
+  subscribe(topics) {
+    this.subscriptions = topics;
+  }
+
   publish = (uid, topic, payload, qos = 0, retained = false) => {
-    this.connectionsByUid[uid].client.publish(topic, payload, qos, retained);
+    this.connectionsByUid[uid].publish(topic, payload, qos, retained);
   };
 
   removeConnection(uid) {
@@ -131,17 +168,18 @@ export default class MQTTConnectionManager {
       port,
       username,
       password,
-      deviceId
+      deviceId,
+      subscriptions: this.subscriptions
     });
     this.connectionsByUid[uid] = connection;
-    subscribeTo(this, connection, uid);
+    addEventListeners(this, connection, uid);
 
     console.log(`Created connection ${uid}`, {
       hostname,
       port,
       username,
-      password,
-      deviceId
+      deviceId,
+      subscriptions: this.subscriptions
     });
   }
 }
