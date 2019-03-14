@@ -29,7 +29,7 @@ export default function* root() {
     // some sagas only receive an action
     takeLatest(StartupTypes.STARTUP, startup),
     takeLatest(
-      ConnectionsTypes.CONNECTIONS_REQUEST,
+      [StartupTypes.STARTUP, ConnectionsTypes.CONNECTIONS_REQUEST],
       getConnections,
       ConnectionStorageAPI,
       connectionsManager

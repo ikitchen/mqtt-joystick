@@ -26,7 +26,7 @@ const PrimaryNav = createStackNavigator(
     // Default config for all screens
     headerMode: 'float',
 
-    initialRouteName: 'ConnectionEditorScreen',
+    initialRouteName: 'LaunchScreen',
     navigationOptions: {
       headerStyle: styles.header
     }

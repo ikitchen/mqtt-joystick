@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-// import PropTypes from 'prop-types';
 import { View, Text } from 'react-native';
 import styles from './Styles/JoystickStyle';
 import { PanResponder } from 'react-native';
