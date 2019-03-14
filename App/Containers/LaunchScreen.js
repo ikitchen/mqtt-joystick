@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
-import { ScrollView, Text, Image, View } from 'react-native';
+import { View } from 'react-native';
 import DevscreensButton from '../../ignite/DevScreens/DevscreensButton.js';
 import { NavigationActions } from 'react-navigation';
-import { Button } from 'react-native';
 import { Images } from '../Themes';
 import { connectionsManager } from '../Services/MQTT';
-
-// Styles
-import styles from './Styles/LaunchScreenStyles';
 import Joystick from '../Components/Joystick.js';
+import styles from './Styles/LaunchScreenStyles';
+import { Header, Right, Button, Text } from 'native-base';
 
 export default class LaunchScreen extends Component {
   onJoystickChange = ({ sector, side }) => {
@@ -16,15 +14,21 @@ export default class LaunchScreen extends Component {
     connectionsManager.publish('default', 'direction', side || '0', 2);
   };
 
+  handleEdit = () => {
+    this.props.navigation.navigate('ConnectionEditorScreen');
+  };
+
   render() {
     return (
       <View style={styles.mainContainer}>
-        <Button
-          title="Control"
-          onPress={() =>
-            this.props.navigation.navigate({ routeName: 'ControlScreen' })
-          }
-        />
+        <Header>
+          <Right>
+            <Button onPress={this.handleEdit}>
+              <Text>Edit</Text>
+            </Button>
+          </Right>
+        </Header>
+
         <Joystick onChange={this.onJoystickChange} />
       </View>
     );

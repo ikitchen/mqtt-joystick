@@ -17,7 +17,7 @@ const PrimaryNav = createStackNavigator(
     LaunchScreen: {
       screen: LaunchScreen,
       navigationOptions: () => ({
-        title: 'Home'
+        header: null
       })
     },
     ControlScreen: { screen: ControlScreen }
